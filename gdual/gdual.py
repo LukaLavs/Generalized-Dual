@@ -202,22 +202,14 @@ class GDual:
             G.append(self.diff(tup))
         return G
     
-    def univariate_derivatives(self, variable):
-        """ returns a list of derivates with respect to variable starting with f value"""
-        D = []
-        m = len(self.vars)
-        index_var = self.vars.index(variable)
-        for i in range(0, self.order + 1):
-            tup = [0 for _ in range(m)] # variable can for example be "x" or 1
-            tup[index_var] = i
-            D.append(self.diff(tuple(tup)))
-        return D
-    
     def taylor_coeffs(self, order):
         if order > self.order:
             raise ValueError("Order can not be greater that initialized max_order")
         coeffs = {key: v * self.multi_factorial(key) for key, v in self.terms.items() if sum(key) <= order}
         return dict(sorted(coeffs.items()))    
+    
+    def deriviates(self, variable):
+        return [self.diff(tuple(j if self.vars[i] == variable else 0 for i in range(len(self.vars)))) for j in range(0, self.order + 1)]
     
     @property
     def value(self):
@@ -246,7 +238,7 @@ def taylor_eval(coeffs, vars):
     
 def gsum(X):
     p = X
-    for _ in range(1, len(X) + 1):
+    for _ in range(1, X.order):
         p += X
     return p
 
@@ -276,9 +268,7 @@ def exp(X):
 def log(X, B=None):
     if B:
         if B > 0 and B != 1:
-            if isinstance(B, GDual):
-                return log(X) / log(B)
-            return log(X) / math.log(B)
+            return log(X) / log(B)
     f0, f_hat = X.decompose()
     base = f_hat / f0
     result = GDual.constant(0.0, X.vars, X.order)
@@ -349,12 +339,6 @@ def sin(X):
 
 def cos(X):
     return sin(X + math.pi/2)
-
-def sec(X):
-    return 1 / cos(X)
-
-def csc(X):
-    return 1 / sin(X)
 
 def tan(X):
     return sin(X) / cos(X)
@@ -454,11 +438,13 @@ def acoth(X):
         warnings.warn(f"Acoth: out of domain at point X = {f0}, returning NaN", UserWarning)
     return 0.5 * log((X + 1) / (X - 1))
 
+
 def asech(X):
     if not (0 < X < 1):
         f0, _ = X.decompose()
         warnings.warn(f"Asech: out of domain at point X = {f0}, returning NaN", UserWarning)
     return log((1 + sqrt(1 - X**2)) / X)
+
 
 def acsch(X):
     if X == 0:
