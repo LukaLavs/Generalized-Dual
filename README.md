@@ -1,33 +1,48 @@
-# Posplošene dualne številke
+# generalized-dual
 
-Ta projekt implementira razširjeno aritmetiko posplošenih (trunciranih) dualnih števil za avtomatsko diferenciacijo višjih redov v več dimenzijah.
+A minimal Python library for generalized dual numbers and automatic differentiation, supporting arbitrary-order derivatives, complex numbers, and vectorized operations. Many difficult functions are implemented.
 
-Več o teoriji: [Audi algebra](https://darioizzo.github.io/audi/theory_algebra.html)
+## Installation
 
-## Funkcionalnosti
+```bash
+pip install generalized-dual
+```
 
-### Osnovne funkcije
+## Usage
 
-- Aregati: `gsum(list)`, `prod(list)`
-- Osnovna matematika: `gabs`, `sign`, `exp`, `log(x, base)`, `log2`, `log10`, `gpow`, `sqrt`, `cbrt`
-- Trigonometrične: `sin`, `cos`, `tan`, `cot`, `sec`, `csc`
-- Inverzne trigonometrične: `asin`, `acos`, `atan`, `acot`
-- Hiperbolične: `sinh`, `cosh`, `tanh`, `coth`, `sech`, `csch`
-- Inverzne hiperbolične: `asinh`, `acosh`, `atanh`, `acoth`, `asech`, `acsch`
-- Posebne: `erf`
+```python
+from generalized_dual import GeneralizedDual, initialize
+from generalized_dual.functions import exp, log, sin
+import numpy as np
+import mpmath
 
-### Napredne funkcije (`advanced.`)
+mpmath.mp.dps = 50  # Set precision
 
-- Gamma funkcije: `gamma`, `loggamma`, `factorial`, `falling_factorial`, `rising_factorial`, `comb`, `beta`
-- Posebni integrali: `Li`, `Ei`, `Si`, `Ci`, `S`, `C`
-- Orodja: `taylor_val`
+x, y = initialize(np.array([0.5]), np.array([1.0]), m=2)
+f = exp(x * y) + log(y)
+print(f.diff((1, 0)))  # Derivative w.r.t x
+```
 
-### Metode za `GDual` objekte
+## Features
 
-Uporaba: `X.metoda(...)`, kjer je `X` objekt tipa `GDual`.
+- Generalized dual numbers for multi-variable, high-order differentiation
+- Real and complex support using `mpmath`
+- Vectorized operations with NumPy arrays
+- Symbolic integration (via Taylor expansions)
+- Rich function support: `exp`, `log`, `trig`, `gamma`, `erfinv`, `lambertw`, etc.
 
-- `diff()` — parcialni odvod
-- `gradient()` — gradient
-- `hessian()` — Hessova matrika
-- `univariate_derivatives(var)` — seznam `[` `f` `,` `f'` `,` `f''` `, ... ]`
-- `taylor_coeffs(order)` — Taylorjevi koeficienti do izbranega reda
+## Structure
+
+```
+generalized_dual/
+│
+├── core.py          # GeneralizedDual class
+├── functions.py     # Math operations
+├── utils.py         # Initialization, display tools
+├── experimental/    # Optional features
+├── __init__.py
+```
+
+## License
+
+MIT © 2025 Luka Lavš
