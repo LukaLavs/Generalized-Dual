@@ -1,8 +1,28 @@
 from .core import GeneralizedDual
 import numpy as np
 import mpmath
+from functools import wraps
+
 
 def to_mpf_or_mpc(x):
+    """
+    Converts numeric types in np.ndarrays into mpmath numbers.
+
+    Parameters
+    ----------
+    X : np.ndarray or numeric
+        An object which to enrich with mpmath percision.
+
+    Returns
+    -------
+    np.ndarray or numeric
+        Enriched object with support for mpmath arbitrary percision.
+
+    Examples
+    --------
+    >>> X = np.array([[1, 3 + 2j], [4, 2]])
+    >>> to_mpf_or_mpc(X)
+    """
     if hasattr(x, "item"):
         x = x.item()
     if isinstance(x, (mpmath.mpf, mpmath.mpc)):
@@ -12,8 +32,28 @@ def to_mpf_or_mpc(x):
     else:
         return mpmath.mpf(x)
     
+    
 def initialize(*vars, m):
-    """ initializes variables 
+    """
+    Initialize GeneralizedDual variables ready for diferentiation.
+    It assigns dimensions (number of variables) and maximum order of Taylor terms (`m`).
+    Numbers in variables will be automatically enriched with mpmath arbitrary percision.
+
+    Parameters
+    ----------
+    vars : list of same dimensions np.ndarrays or numbers.
+    
+    m  : maximum order of Taylor terms we are interested in.
+
+    Returns
+    -------
+    A tuple of GeneralizedDual variables
+        Result are GeneralDual variables ready for mixed partial derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> x, y, z, w = initialize(3, 2, 1, 3, m=9)
+    >>> q, w = initialize(np.ndarray([1, 3, 4]), np.array([2, 7, 4]), m=5)
     """
     n = len(vars)
     one = vars[0] * 0 + 1  # Creates ones like var, keeping types and structure
@@ -31,6 +71,7 @@ def initialize(*vars, m):
         return variables[0]
     return tuple(variables)
 
+
 def disp(npndarray):
     """Displays results from diff, gradient, hessian, derivatives_along, etc., 
     with correct formatting for real and complex numbers."""
@@ -44,4 +85,73 @@ def disp(npndarray):
             return mpmath.mp.nstr(x, mpmath.mp.dps)
     disp_vec = np.vectorize(format_num)
     print(disp_vec(npndarray))
+    
+    
+   
+def vectorize_func(f):
+    @wraps(f)
+    def wrapper(vars):
+        # Find broadcasting shape
+        shapes = [np.shape(v) for v in vars if isinstance(v, np.ndarray)]
+        if not shapes:
+            return f(vars)
 
+        # Determine broadcasted shape
+        try:
+            out_shape = np.broadcast_shapes(*shapes)
+        except ValueError:
+            raise ValueError("Input arrays have incompatible shapes for broadcasting.")
+
+        # Create output array
+        result = np.empty(out_shape, dtype=np.result_type(*[np.array(v).dtype for v in vars]))
+
+        # Iterate over all broadcasted indices
+        for idx in np.ndindex(out_shape):
+            inputs = []
+            for v in vars:
+                if isinstance(v, np.ndarray):
+                    # Use broadcasting rules
+                    inputs.append(v[idx] if v.shape == out_shape else np.broadcast_to(v, out_shape)[idx])
+                else:
+                    inputs.append(v)
+            result[idx] = f(inputs)
+        return result
+    return wrapper
+
+def build_taylor(F, *centers, to_float=False):
+    if to_float:
+        F = F.to_float()
+
+    zero = F._default_zero()
+    n_vars = F.n
+    zero_flat = zero.flatten()
+    shape = zero.shape
+
+    centers_flat = [np.array(c).flatten() for c in centers]
+    N = centers_flat[0].size
+
+    funcs = []
+
+    for p in range(N):
+        center_p = [c[p] for c in centers_flat]
+
+        @vectorize_func
+        def func(vars, center_p=center_p, p=p):
+            result = zero_flat[p] * 0  # zero of correct type
+
+            for key, coeff in F.terms.items():
+                term = 1
+                for i in range(n_vars):
+                    if vars[i] is None and key[i] != 0:
+                        term = 0
+                        break
+                    elif vars[i] is not None:
+                        term *= (vars[i] - center_p[i]) ** key[i]
+                if term != 0:
+                    result += coeff.flatten()[p] * term
+            return result
+
+        funcs.append(func)
+    print("dfskfjadlsfjaksdjfaksdjfakjsdfaskdjfasdkjfaksdjfajsdfkajdfj", shape)
+    if shape == (): return (np.array(funcs).reshape(shape)).item()
+    return np.array(funcs).reshape(shape)

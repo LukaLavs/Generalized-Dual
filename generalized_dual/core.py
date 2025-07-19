@@ -49,6 +49,13 @@ class GeneralizedDual:
         zero = self.terms[key0] * 0
         return zero
     
+    def to_float(self):
+        new_terms = {}
+        convert = np.vectorize(lambda x: float(x) if not mpmath.isnan(x) else float("nan"))
+        for key, val in self.terms.items():
+            new_terms[key] = convert(val)
+        return GeneralizedDual(new_terms, n=self.n, m=self.m)
+    
     def __add__(self, other):
         if isinstance(other, GeneralizedDual):
             result_terms = dict()

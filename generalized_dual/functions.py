@@ -8,12 +8,48 @@ import mpmath
 # --- Useful Functions ---
 
 def dual_sum(X):
+    """
+    Compute the Sum function for a list of GeneralizedDual inputs.
+
+    Parameters
+    ----------
+    X : list of GeneralizedDual or numeric objects
+        List of objects to sum. First object must be GeneralizedDual.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> L = list(dual_pow(x, i) for i in range(1, 5))
+    >>> dual_sum(L)  # where x is a GeneralizedDual instance
+    """
     p = X
     for _ in range(1, X.m):
         p += X
     return p
 
 def prod(X):
+    """
+    Compute the Exponential function for a list of GeneralizedDual inputs.
+
+    Parameters
+    ----------
+    X : list of GeneralizedDual or numeric objects
+        List of objects to multiply. First object must be GeneralizedDual.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> L = list(nroot(x, i) for i in range(1, 10))
+    >>> prod(L)  # where x is a GeneralizedDual instance
+    """
     p = X
     for _ in range(1, X.m):
         p *= X
@@ -21,7 +57,7 @@ def prod(X):
 
 def dual_abs(X):
     """
-    Compute the absolute value or complex norm of a GeneralizedDual object.
+    Compute the Absolute Value or Complex Norm of a GeneralizedDual object.
 
     For complex-valued inputs, returns the norm √(Re(X)² + Im(X)²).
     For real inputs, returns the absolute value.
@@ -59,13 +95,45 @@ def dual_abs(X):
     return X if X >= 0 else - X
 
 def sign(X):
-    """ returns sign of X """
+    """
+    Compute the Sign function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual, not complex
+        Point at which to evaluate the Sign function.
+
+    Returns
+    -------
+    int
+        1 if sign is positive, -1 if negative and 0 otherwise.
+
+    Examples
+    --------
+    >>> sign(x)  # where x is a GeneralizedDual instance
+    """
     return 1 if X > 0 else (-1 if X < 0 else 0)
 
 # --- Log functions ---
 
 def exp(X):
-    """ returns exponential function """
+    """
+    Compute the Exponential function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Exponential function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> exp(x)  # where x is a GeneralizedDual instance
+    """
     f0, f_hat = X._decompose()
     result = GeneralizedDual._constant(1, size_like=X)
     base = GeneralizedDual._constant(1, size_like=X)
@@ -76,26 +144,30 @@ def exp(X):
 
 def log(X, B=None):
     """
-    Compute the logarithm of a GeneralizedDual input with optional GeneralizedDual base.
+    Compute the Base 10 Logarithmic function for a GeneralizedDual input.
 
     Parameters
     ----------
     X : GeneralizedDual
-        Input value to compute the logarithm of.
-
-    B : GeneralizedDual, number or None, optional
-        Base of the logarithm. If None, computes the natural logarithm.
+        Point at which to evaluate the Logarithmic function.
+        
+    B:  GeneralizedDual or numeric
+        Point at which to evaluate the Logarithmic function.
 
     Returns
     -------
     GeneralizedDual
-        The logarithm of `X` with base `B`.
+        Result including derivatives up to order `m`.
+        
+    Notes
+    -----
+    If X is numeric, it is easy to convert it to GeneralizedDual class with:
+    >>> X_new = GeneralizedDual._constant(X, size_like=T) # where T is same size as dual we need.
+        # For percision purpuse, it is recomended that X is an array of mpmath numbers.
 
     Examples
     --------
-    >>> y = log(x)          # natural log, x is GeneralizedDual
-    >>> z = log(x, B=b)     # log base b, both x and b GeneralizedDual
-    >>> z.diff((1,))
+    >>> log(x, b)  # where x and b are GeneralizedDual instances
     """
     if isinstance(B, int):
         B = GeneralizedDual._constant(B, size_like=X)
@@ -113,35 +185,70 @@ def log(X, B=None):
     return - result + np.vectorize(mpmath.log)(f0)
 
 def log2(X):
-    """ returns base 2 logarithm """
+    """
+    Compute the Base 2 Logarithmic function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Base 2 Logarithmic function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> log2(x)  # where x is a GeneralizedDual instance
+    """
     return log(X, 2)
 
 def log10(X):
-    """ returns base 10 logarithm """
+    """
+    Compute the Base 10 Logarithmic function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Base 10 Logarithmic function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> log10(x)  # where x is a GeneralizedDual instance
+    """
     return log(X, 10)
 
 # --- X^Y functions ---
 
 def dual_pow(X, A):
     """
-    Compute power `X` raised to `A`, supporting GeneralizedDual inputs.
+    Compute the Power function for a GeneralizedDual input.
 
     Parameters
     ----------
-    X : GeneralizedDual or scalar
-        Base value.
-
-    A : GeneralizedDual or scalar
-        Exponent value.
+    X : GeneralizedDual or numeric
+        Point at which to evaluate the Power function.
+        
+    A : GeneralizedDual or numeric
+        Point at which to evaluate the Power function.
 
     Returns
     -------
     GeneralizedDual
-        Result of `X**A` with correct derivative propagation.
+        Result including derivatives up to order `m`.
 
-    Notes
+       Notes
     -----
-    At least one of `X` or `A` must be a GeneralizedDual instance.
+    If X and A are numeric, it is easy to convert them to GeneralizedDual class with:
+    >>> X_new = GeneralizedDual._constant(X, size_like=T) # where T is same size as dual we need.
+        # For percision purpuse, it is recomended that X is an array of mpmath numbers.
+
 
     Examples
     --------
@@ -176,29 +283,58 @@ def dual_pow(X, A):
     return result * (f0 ** A) 
 
 def sqrt(X):
-    """ returns square root function """
-    return dual_pow(X, mpmath.mpf("1/2"))
-
-def cbrt(X):
-    """ returns cube root function """
-    return sign(X) * dual_pow(dual_abs(X), mpmath.mpf("1/3"))
-
-def nroot(X, n):
     """
-    Compute the n-th root of a GeneralizedDual input.
+    Compute the Square Root function for a GeneralizedDual input.
 
     Parameters
     ----------
-    X : GeneralizedDual or scalar
-        Value to compute the n-th root of.
-
-    n : int
-        The root degree.
+    X : GeneralizedDual
+        Point at which to evaluate the Square Root function.
 
     Returns
     -------
     GeneralizedDual
-        The n-th root of `X`, with derivatives if `X` is GeneralizedDual.
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> sqrt(x)  # where x is a GeneralizedDual instance
+    """
+    return dual_pow(X, mpmath.mpf("1/2"))
+
+def cbrt(X):
+    """
+    Compute the Cube Root function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Cube Root function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> cbrt(x)  # where x is a GeneralizedDual instance
+    """
+    return sign(X) * dual_pow(dual_abs(X), mpmath.mpf("1/3"))
+
+def nroot(X, n):
+    """
+    Compute the Nth Root function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Nth Root function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
 
     Examples
     --------
@@ -214,7 +350,23 @@ def nroot(X, n):
 # --- Trig ---
 
 def sin(X):
-    """ returns sine function """
+    """
+    Compute the Sine function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Sine function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> sin(x)  # where x is a GeneralizedDual instance
+    """
     f0, f_hat = X._decompose()
     sinf0 = np.vectorize(mpmath.sin)(f0)
     cosf0 = np.vectorize(mpmath.cos)(f0)
@@ -234,19 +386,83 @@ def sin(X):
     return result
 
 def cos(X):
-    """ returns cosine function """
+    """
+    Compute the Cosine function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Cosine function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> cos(x)  # where x is a GeneralizedDual instance
+    """
     return sin(X + mpmath.pi/2)
 
 def tan(X):
-    """ returns tangent function """
+    """
+    Compute the Tangent function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Tangent function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> tan(x)  # where x is a GeneralizedDual instance
+    """
     return sin(X) / cos(X)
 
 def cot(X):
-    """ returns cotangent function """
+    """
+    Compute the Cotangent function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Cotangent function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> cot(x)  # where x is a GeneralizedDual instance
+    """
     return cos(X) / sin(X)
 
 def atan(X):
-    """ returns inverse tangent function """
+    """
+    Compute the Inverse Tangent function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Inverse Tangent function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> atan(x)  # where x is a GeneralizedDual instance
+    """
     f0, f_hat = X._decompose()
     result = GeneralizedDual._constant(0, size_like=X)
     atan_f0 = np.vectorize(mpmath.atan)(f0)
@@ -282,73 +498,329 @@ def atan(X):
     return result + atan_f0
 
 def asin(X):
-    """ returns inverse sine function """
+    """
+    Compute the Inverse Sine function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Inverse Sine function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> asin(x)  # where x is a GeneralizedDual instance
+    """
     return atan(X / sqrt(1 - X**2))
 
 def acos(X):
-    """ returns inverse cosine function """
+    """
+    Compute the Inverse Cosine function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Inverse Cosine function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> acos(x)  # where x is a GeneralizedDual instance
+    """
     return mpmath.pi/2 - asin(X)
 
 def acot(X):
-    """ returns inverse cotangent function """
+    """
+    Compute the Inverse Cotangent function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Inverse Cotangent function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> acot(x)  # where x is a GeneralizedDual instance
+    """
     return atan(1 / X)
 
 # --- Hyperbolic ---
 
 def sinh(X):
-    """ returns hyperbolic sine function """
+    """
+    Compute the Hyperbolic Sine function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Hyperbolic Sine function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> sinh(x)  # where x is a GeneralizedDual instance
+    """
     return (exp(X) - exp(-X)) / 2
 
 def cosh(X):
-    """ returns hyperbolic cosine function """
+    """
+    Compute the Hyperbolic Cosine function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Hyperbolic Cosine function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> cosh(x)  # where x is a GeneralizedDual instance
+    """
     return (exp(X) + exp(-X)) / 2
 
 def tanh(X):
-    """ returns hyperbolic tangent function """
+    """
+    Compute the Hyperbolic Tangent function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Hyperbolic Tangent function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> tanh(x)  # where x is a GeneralizedDual instance
+    """
     return sinh(X) / cosh(X)
 
 def coth(X): 
-    """ returns hyperbolic cotangent function """
+    """
+    Compute the Hyperbolic Cotangent function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Hyperbolic Cotangent function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> coth(x)  # where x is a GeneralizedDual instance
+    """
     return cosh(X) / sinh(X)
 
 def sech(X):
-    """ returns hyperbolic secant function """
+    """
+    Compute the Hyperbolic Secant function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Hyperbolic Secant function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> sech(x)  # where x is a GeneralizedDual instance
+    """
     return 1 / cosh(X)
 
 def csch(X):
-    """ returns hyperbolic cosecant """
+    """
+    Compute the Hyperbolic Cosecant function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Hyperbolic Cosecant function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> csch(x)  # where x is a GeneralizedDual instance
+    """
     return 1 / sinh(X)
 
 def asinh(X):
-    """ retruns inverse hyperbolic sine function """
+    """
+    Compute the Inverse Hyperbolic Sine function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Inverse Hyperbolic Sine function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> asinh(x)  # where x is a GeneralizedDual instance
+    """
     return log(X + sqrt(X**2 + 1))
 
 def acosh(X):
-    """ returns inverse hyperbolic cosine function """
+    """
+    Compute the Inverse Hyperbolic Cosine function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Inverse Hyperbolic Cosine function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> acosh(x)  # where x is a GeneralizedDual instance
+    """
     return log(X + sqrt(X**2 - 1))
 
 def atanh(X):
-    """ returns inverse hyperbolic tangent function """
+    """
+    Compute the Inverse Hyperbolic Tangent function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Inverse Hyperbolic Tangent function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> atanh(x)  # where x is a GeneralizedDual instance
+    """
     return log((1 + X) / (1 - X)) / 2
 
 def acoth(X):
-    """ returns inverse hyperbolic cotangent function """
+    """
+    Compute the Inverse Hyperbolic Cotangent function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Inverse Hyperbolic Cotangent function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> acoth(x)  # where x is a GeneralizedDual instance
+    """
     return log((X + 1) / (X - 1)) / 2
 
 
 def asech(X):
-    """ returns inverse hyperbolic secant function """
+    """
+    Compute the Inverse Hyperbolic Secant function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Inverse Hyperbolic Secant function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> asech(x)  # where x is a GeneralizedDual instance
+    """
     return log((1 + sqrt(1 - X**2)) / X)
 
 
 def acsch(X):
-    """ returns inverse hyperbolic cosecant function """
+    """
+    Compute the Inverse Hyperbolic Cosecant function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Inverse Hyperbolic Cosecant function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> acsch(x)  # where x is a GeneralizedDual instance
+    """
     return log(1/X + sqrt(1/X**2 + 1))
 
 # --- Other ---
 
 def erf(X):
-    """ returns error function """
+    """
+    Compute the Error function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Error function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> erf(x)  # where x is a GeneralizedDual instance
+    """
     f0, f_hat = X._decompose()
     def hermite_poly(n, x):
         if n == 0:
@@ -375,7 +847,23 @@ def erf(X):
 # --- Gamma ---
 
 def gamma(X):
-    """ returns gamma function """
+    """
+    Compute the Gamma function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Gamma function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> gamma(x)  # where x is a GeneralizedDual instance
+    """
     f0, f_hat = X._decompose()
     f0 = np.vectorize(lambda x: mpmath.nan if (x % 1 == 0 and x <= 0) else x)(f0)
     def bell_poly(n, x):
@@ -398,7 +886,25 @@ def gamma(X):
     return (1 + result) * np.vectorize(mpmath.gamma)(f0)
 
 def loggamma(X):
-    """ returns log(gamma(X)) """
+    """
+    Evaluates the Logarithmic Gamma function for a GeneralizedDual input.
+    
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Logarithmic Gamma function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+
+    Examples
+    --------
+    >>> mpmath.mp.dps = 100
+    >>> x = initialize(np.linspace(0, 10, 1000), m=7)
+    >>> disp(loggamma(x).derivatives_along(0)) # display derivatives along zeroth variable (x)
+    """
     f0, f_hat = X._decompose()
     f0 = np.vectorize(lambda x: mpmath.nan if (x % 1 == 0 and x <= 0) else x)(f0)
     result = GeneralizedDual._constant(0, size_like=X)
@@ -411,17 +917,17 @@ def loggamma(X):
 
 def factorial(X):
     """
-    Compute the factorial of X, generalized to support GeneralizedDual inputs.
+    Compute the Factorial function for a GeneralizedDual input.
 
     Parameters
     ----------
     X : GeneralizedDual
-        Input value to compute the factorial for.
+        Point at which to evaluate the Factorial function.
 
     Returns
     -------
     GeneralizedDual
-        Factorial of X, with derivatives if input is dual.
+        Result including derivatives up to order `m`.
 
     Examples
     --------
@@ -431,20 +937,27 @@ def factorial(X):
 
 def falling_factorial(X, N):
     """
-    Compute the falling factorial: X * (X - 1) * ... * (X - N + 1).
-
+    Evaluate the Falling Factorial function f(X, Y) := X * (X - 1) * ... * (X - N + 1).
+    
     Parameters
     ----------
-    X : GeneralizedDual or scalar
-        The starting value, can be dual or numeric.
+    X : GeneralizedDual
+        Point at which to evaluate the Falling Factorial function.
 
-    N : GeneralizedDual or scalar
-        The number of terms in the product, can be dual or numeric.
-
+    N : GeneralizedDual or numeric
+        Point at which to evaluate the Falling Factorial function.
+        
     Returns
     -------
     GeneralizedDual
-        The falling factorial result, supporting derivatives if inputs are dual.
+        Result including derivatives up to order `m`.
+      
+    Notes
+    -----  
+    If X is numeric, it is easy to convert them to GeneralizedDual class with:
+    >>> X_new = GeneralizedDual._constant(X, size_like=T) # where T is same size as dual we need.
+        # For percision purpuse, it is recomended that X is an array of mpmath numbers.
+
 
     Examples
     --------
@@ -455,20 +968,27 @@ def falling_factorial(X, N):
 
 def rising_factorial(X, N):
     """
-    Compute the rising factorial: X * (X + 1) * ... * (X + N - 1).
+    Evaluate the Rising Factorial function f(X, N) := X * (X + 1) * ... * (X + N - 1).
 
     Parameters
     ----------
-    X : GeneralizedDual or scalar
-        The starting value, can be dual or numeric.
+    X : GeneralizedDual
+        Point at which to evaluate the Rising Factorial function.
 
-    N : GeneralizedDual or scalar
-        The number of terms in the product, can be dual or numeric.
-
+    N : GeneralizedDual or numeric
+        Point at which to evaluate the Rising Factorial function.
+        
     Returns
     -------
     GeneralizedDual
-        The rising factorial result, supporting derivatives if inputs are dual.
+        Result including derivatives up to order `m`.
+        
+    Notes
+    -----
+    If X is numeric, it is easy to convert them to GeneralizedDual class with:
+    >>> X_new = GeneralizedDual._constant(X, size_like=T) # where T is same size as dual we need.
+        # For percision purpuse, it is recomended that X is an array of mpmath numbers.
+
 
     Examples
     --------
@@ -479,7 +999,33 @@ def rising_factorial(X, N):
 
 def comb(N, K):
     """
-    Compute the binomial coefficient (N choose K). """
+    Evaluate the Binomial Coefficient (N choose K) for a GeneralizedDual input. 
+
+    Parameters
+    ----------
+    N : GeneralizedDual
+        Point at which to evaluate the Binomial Coefficient function.
+        
+    K : GeneralizedDual
+        Point at which to evaluate the Binomial Coefficient function.
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+        
+    Notes
+    -----
+    If K or N are numeric, it is easy to convert them to GeneralizedDual class with:
+    >>> K_new = GeneralizedDual._constant(K, size_like=T) # where T is same size as dual we need.
+        # For percision purpuse, it is recomended that X is an array of mpmath numbers.
+
+
+    Examples
+    --------
+    >>> n, k = initialize(78, 21, m=3)
+    >>> comb(n, k).gradient()
+    """
     if N < K:
         if isinstance(K, GeneralizedDual):
             return GeneralizedDual._constant(0, size_like=K)
@@ -491,7 +1037,34 @@ def comb(N, K):
 
 def beta(X, Y):
     """
-    Beta function B(X, Y) via Gamma functions. """
+    Evaluate Beta function for a GeneralizedDual input.
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Point at which to evaluate the Beta function.
+        
+    Y: GeneralizedDual
+        Point at which to evaluate the Beta function.    
+
+    Returns
+    -------
+    GeneralizedDual
+        Result including derivatives up to order `m`.
+        
+    Notes
+    -----
+    If X or Y are numeric, it is easy to convert them to GeneralizedDual class with:
+    >>> X_new = GeneralizedDual._constant(X, size_like=T) # where T is same size as dual we need.
+        # For percision purpuse, it is recomended that X is an array of mpmath numbers.
+
+    Examples
+    --------
+    >>> X = np.array([[1, 2], [3, 4]])
+    >>> Y = np.sin(X)
+    >>> x, y = initialize(X, Y, m=3)
+    >>> beta(x, y).hessian()
+    """
     return gamma(X) * gamma(X) / gamma(X + Y)
 
 # --- integrals of upper bound ---
@@ -536,17 +1109,17 @@ def integral_upper(f, integrand, X):
 
 def li(X):
     """
-    Logarithmic integral for a GeneralizedDual input.
+    Evaluate Logarithmic Integral for a GeneralizedDual input.
 
     Parameters
     ----------
     X : GeneralizedDual
-        Input values.
+        Point at which to evaluate the Logarithmic Integral function.
 
     Returns
     -------
     GeneralizedDual
-        Result with derivatives up to order `m`.
+        Result including derivatives up to order `m`.
 
     Examples
     --------
@@ -559,17 +1132,17 @@ def li(X):
     
 def ei(X):
     """
-    Exponential integral for a GeneralizedDual input.
+    Evaluate Exponential Integral for a GeneralizedDual input.
 
     Parameters
     ----------
     X : GeneralizedDual
-        Input values.
+        Point at which to evaluate the Exponential Integral function.
 
     Returns
     -------
     GeneralizedDual
-        Result with derivatives up to order `m`.
+        Result including derivatives up to order `m`.
 
     Examples
     --------
@@ -583,17 +1156,17 @@ def ei(X):
         
 def si(X):
     """
-    Sine integral for a GeneralizedDual input.
+    Evaluate Sine Integral for a GeneralizedDual input.
 
     Parameters
     ----------
     X : GeneralizedDual
-        Input values.
+        Point at which to evaluate the Sine Integral function.
 
     Returns
     -------
     GeneralizedDual
-        Result with derivatives up to order `m`.
+        Result including derivatives up to order `m`.
 
     Examples
     --------
@@ -606,17 +1179,17 @@ def si(X):
     
 def ci(X):
     """
-    Cosine integral for a GeneralizedDual input.
+    Evaluate Cosine Integral for a GeneralizedDual input.
 
     Parameters
     ----------
     X : GeneralizedDual
-        Input values.
+        Point at which to evaluate the Cosine Integral function.
 
     Returns
     -------
     GeneralizedDual
-        Result with derivatives up to order `m`.
+        Result including derivatives up to order `m`.
 
     Examples
     --------
@@ -629,17 +1202,17 @@ def ci(X):
     
 def fresnels(X):
     """
-    Fresnel sine integral for a GeneralizedDual input.
+    Evaluate Fresnel Sine Integral for a GeneralizedDual input.
 
     Parameters
     ----------
     X : GeneralizedDual
-        Input values.
+        Point at which to evaluate the Fresnel Sine Integral function.
 
     Returns
     -------
     GeneralizedDual
-        Result with derivatives up to order `m`.
+        Result including derivatives up to order `m`.
 
     Examples
     --------
@@ -652,17 +1225,17 @@ def fresnels(X):
     
 def fresnelc(X):
     """
-    Fresnel cosine integral for a GeneralizedDual input.
+    Evaluate Fresnel Cosine Integral for a GeneralizedDual input.
 
     Parameters
     ----------
     X : GeneralizedDual
-        Input values.
+        Point at which to evaluate the Fresnel Cosine Integral function.
 
     Returns
     -------
     GeneralizedDual
-        Result with derivatives up to order `m`.
+        Result including derivatives up to order `m`.
 
     Examples
     --------
@@ -677,20 +1250,20 @@ def fresnelc(X):
 
 def inverse(X, df):
     """
-    Compute the inverse function using Lagrange inversion theorem on a GeneralizedDual input.
+    Helps to evaluate an inverse function for a GeneralizedDual input.
 
     Parameters
     ----------
     X : GeneralizedDual
-        The point at which to compute the inverse. Must be a GeneralizedDual object.
+        Point, with non-dual part already evaluated on inverse function, at which to evaluate the inverse function.
 
-    df : list or sequence
-        List of derivatives of the original function at the point corresponding to X.
+    df : list
+        List containing deriviates of a function applied on non-dual part of starting non-dual part of X.
 
     Returns
     -------
     GeneralizedDual
-        The inverse function evaluated at `X`, including Taylor terms up to order `m`.
+        Result including derivatives of an inverse function up to order `m`.
 
     Examples
     --------
@@ -703,7 +1276,6 @@ def inverse(X, df):
             F = erf(x0) # define a helper dual function
             df = F.derivatives_along(0) # obtain deriviates of f
             return inverse(X, df) # You have succesfully defined erf^-1(X)
-
     """
     f0, f_hat = X._decompose()
     N = X.m
@@ -747,7 +1319,7 @@ def lambertw(X, branch=0):
         Point at which to evaluate the Lambert W function.
 
     branch : int, optional
-        Branch index (default is 0). Use -1 for the lower real branch.
+        Branch index (default is 0).
 
     Returns
     -------
@@ -774,7 +1346,8 @@ def erfinv(X):
     Parameters
     ----------
     X : GeneralizedDual
-        Input values (must lie in [-1, 1]).
+        Point at which to evaluate the Lambert W function.
+        The domain of inverse error function is limited on -1 <= X <= 1.
 
     Returns
     -------

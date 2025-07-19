@@ -64,6 +64,10 @@ print(Df)
 ### 🧮 Approximate 2D Integral via Taylor Expansion
 
 ```python
+from generalized_dual import *
+import numpy as np
+import mpmath
+
 mpmath.mp.dps = 15
 A = [0.3, 0.2]
 B = [0.7, 0.6]
@@ -80,6 +84,10 @@ print(integral_aprox)
 ### 🔁 Define a Custom Inverse Function via Lagrange Inversion
 
 ```python
+from generalized_dual import *
+import numpy as np
+import mpmath
+
 mpmath.mp.dps = 20
 def my_inverse_func(X):
     f0, f_hat = X._decompose()
@@ -101,6 +109,9 @@ disp(F.derivatives_along(0))
 ### 🔍 Access Specific Taylor Term
 
 ```python
+from generalized_dual import *
+import numpy as np
+
 X = np.array([[1, 2], [3, 4]])
 Y = np.log(X)
 x, y = initialize(X, Y, m=3)
@@ -115,6 +126,8 @@ disp(term)
 ### 📈 Plot Mixed Derivative fx²y² with Custom Function
 
 ```python
+from generalized_dual import *
+import numpy as np
 import matplotlib.pyplot as plt
 import time
 
@@ -135,6 +148,110 @@ plt.plot(X, fx2y2, label='∂²f/∂x²∂y² at y=2.3')
 plt.title('f(x, y) := abs(lambertw(x) + log(y)) + rising_factorial(...)')
 plt.grid(True)
 plt.legend()
+plt.show()
+```
+
+---
+
+### 🔍 Taylor Approximation of `|LambertW(sin(xy + z))|` on Branch -1
+
+```python
+from generalized_dual import *
+import numpy as np
+import mpmath
+
+X = np.linspace(0, 3, 5)
+Y, Z = np.sin(X) + 1, np.cos(X)
+x, y, z = initialize(X, Y, Z, m=3)
+
+F = dual_abs(lambertw(sin(x * y + z), branch=-1))
+p = 1  # Center index
+
+X_test = np.linspace(-2 * np.pi, 2 * np.pi, 300)
+f_exact = lambda x: float(mpmath.fabs(mpmath.lambertw(mpmath.sin(x * Y[p] + Z[p]), k=-1)))
+Y_true = np.vectorize(f_exact)(X_test)
+
+taylf = build_taylor(F, X, Y, Z, to_float=True)[p]
+Y_taylor = taylf([X_test, None, None])
+
+plt.plot(X_test, Y_true, label='True')
+plt.plot(X_test, Y_taylor, label='Taylor')
+plt.scatter(X[p], f_exact(X[p]), color='red')
+plt.title(r"$|W_{-1}(\sin(xy+z))|$ Taylor Approximation")
+plt.grid(); plt.legend(); plt.show()
+```
+
+---
+
+### ✨ Another plot example
+
+```python
+from generalized_dual import *
+import numpy as np
+
+X = 2
+x = initialize(X, m=10)
+
+F = sin(cos(x**2) + atan(x)) + sin(4*x)
+f = lambda x: np.sin(np.cos(x**2) + np.arctan(x)) + np.sin(4*x)
+
+taylor = build_taylor(F, X, to_float=True)
+
+X_range = np.linspace(0, 3, 100)
+plt.plot(X_range, f(X_range), label='func')
+plt.plot(X_range, taylor([X_range]), label='taylor')
+plt.scatter(X, f(X))
+plt.ylim(-3, 3)
+plt.legend()
+plt.show()
+```
+
+---
+
+### 🌐 Visualize 2D Taylor Approximation in 3D
+
+```python
+from generalized_dual import *
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+
+# Setup
+X, Y = 2, 3
+x, y = initialize(X, Y, m=3)
+F = sin(x * y)
+f = lambda x, y: np.sin(x * y)
+taylor = build_taylor(F, X, Y, to_float=True) # build taylor function around (X, Y)
+# If X, Y were ndarrays the result would be a ndarray of functions around respected centers
+
+# Grid
+x_vals = np.linspace(0, 4, 100)
+y_vals = np.linspace(0, 4, 100)
+X_grid, Y_grid = np.meshgrid(x_vals, y_vals)
+
+# Evaluate
+Z_fun = f(X_grid, Y_grid)
+Z_taylor = taylor([X_grid, Y_grid]) # Evaluate taylor polinom around (X, Y)
+Z_point = f(X, Y)
+
+# Plot
+fig = plt.figure(figsize=(10, 6))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X_grid, Y_grid, Z_fun, cmap='viridis', alpha=0.5)
+ax.plot_surface(X_grid, Y_grid, Z_taylor, cmap='plasma', alpha=0.5)
+ax.scatter(X, Y, Z_point, color='red', s=40)
+
+ax.set_title("Function vs. Taylor Approximation")
+ax.set_xlabel('x'); ax.set_ylabel('y'); ax.set_zlabel('z')
+
+legend_elements = [
+    Line2D([0], [0], color='blue', lw=3, label='Function'),
+    Line2D([0], [0], color='orange', lw=3, label='Taylor'),
+    Line2D([0], [0], marker='o', color='w', markerfacecolor='red', markersize=8, label='Center')
+]
+ax.legend(handles=legend_elements, loc='upper left')
+
+plt.tight_layout()
 plt.show()
 ```
 
