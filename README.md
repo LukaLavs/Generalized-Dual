@@ -276,6 +276,18 @@ LICENSE
 
 ---
 
+## 📚 References & Further Reading
+
+This project was inspired and guided by the following resources:
+
+- [Dual number — Wikipedia](https://en.wikipedia.org/wiki/Dual_number)  
+- [The algebra of truncated polynomials](https://darioizzo.github.io/audi/theory_algebra.html)  
+- [How to Find the Taylor Series of an Inverse Function](https://randorithms.com/2021/08/31/Taylor-Series-Inverse.html)   
+
+If you found additional valuable resources, please consider contributing!
+
+---
+
 ## License
 
 MIT © 2025 Luka Lavš
