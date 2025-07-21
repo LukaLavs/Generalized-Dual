@@ -36,6 +36,7 @@ print(f.diff((1, 0)))  # Partial derivative f_x^1y^0
 - Vectorized NumPy operations  
 - Symbolic integration (via Taylor expansions)  
 - Rich function support: `exp`, `log`, `dual_abs`, `trig`, `gamma`, `erfinv`, `lambertw`, and more
+- 📖 See the full list of available functions in [FUNCTIONS.md](./FUNCTIONS.md).
 
 ---
 
