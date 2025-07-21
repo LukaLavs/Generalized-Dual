@@ -9,7 +9,6 @@ class GeneralizedDual:
     def __init__(self, terms=None, n=1, m=1):
         """ n -> number of variables 
             m -> order of interest
-            p -> percision
         """
         self.terms = defaultdict(lambda: 0)
         if terms: self.terms.update(terms)
