@@ -2,6 +2,7 @@ import numpy as np
 from .utils import initialize
 
 def integrate(func, A, B, N, m):
+    """ Experimental integral aproximation method, with no error bounding. Described in theory.pdf """
     def integrate_box(alpha, h):
         # ∫_{-h/2}^{h/2} x^alpha dx = (b^{alpha+1} - a^{alpha+1}) / (alpha+1), separable product form
         a = -np.array(h) / 2

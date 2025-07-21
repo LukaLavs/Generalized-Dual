@@ -89,6 +89,7 @@ def disp(npndarray):
     
    
 def vectorize_func(f):
+    """ Helper function for build_taylor """
     @wraps(f)
     def wrapper(vars):
         # Find broadcasting shape
@@ -119,6 +120,40 @@ def vectorize_func(f):
     return wrapper
 
 def build_taylor(F, *centers, to_float=False):
+    """
+    Returns vectorized taylor functions for points around (X, Y, ...), where F is a GeneralizedDual
+    obtained by evaluating f(X, Y, ...).
+
+    Parameters
+    ----------
+    X : GeneralizedDual
+        Obtained by evaluating dual_f(*centers)
+        
+    centers : list or array
+        List of variables at which f was evaluated
+        
+    to_float : boolean, optional
+        Converts mpmath objects in GeneralizedDual to floats. Good practice before plotting.
+
+    Returns
+    -------
+    np.ndarray of functions or function
+        Result has same dimensions as each center from centers.
+
+    Examples
+    --------
+    >>> X = np.array([[1, 2], [3, 4]])
+    >>> x = initialize(x, m=3)
+    >>> F = sin(x)
+    >>> taylor = build_taylor(F, X)
+    >>> taylor[0, 1]([np.linspace(0, 1, 1000)]) # evaluates taylor with center in x=X[0, 1]=2 in many points at once
+    
+    >>> X, Y = 1, 2.3
+    >>> x, y = initialize(x, y, m=5)
+    >>> F = sin(x + y)*fresnelc(y)
+    >>> taylor = build_taylor(F, X, Y, to_float=True)
+    >>> taylor([np.linspace(2, 3, 10), None]) # Fix y variable into y=Y=2.3
+    """
     if to_float:
         F = F.to_float()
 
@@ -152,6 +187,5 @@ def build_taylor(F, *centers, to_float=False):
             return result
 
         funcs.append(func)
-    print("dfskfjadlsfjaksdjfaksdjfakjsdfaskdjfasdkjfaksdjfajsdfkajdfj", shape)
     if shape == (): return (np.array(funcs).reshape(shape)).item()
     return np.array(funcs).reshape(shape)

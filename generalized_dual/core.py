@@ -206,6 +206,7 @@ class GeneralizedDual:
         return H    
     
     def derivatives_along(self, var):
+        """ derivatives along one variable (provide index of the variable) """
         D = []
         for i in range(self.m + 1):
             key = tuple(i if var == j else 0 for j in range(self.n))
