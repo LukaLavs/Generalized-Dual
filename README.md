@@ -8,9 +8,11 @@ The goal of this project is to create a simple Python library capable of perform
 
 ## Installation
 
-This package is not yet available on PyPI.
+This package is available on PyPI. You can install it using `pip`:
 
-To install it locally, clone the repository and install it using pip:
+    pip install gen-dual
+
+Alternatively, you can install it locally by cloning the repository:
 
     git clone https://github.com/LukaLavs/Generalized-Dual.git
     cd generalized_dual
