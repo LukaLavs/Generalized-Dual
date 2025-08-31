@@ -2,6 +2,10 @@
 
 A minimal Python library for generalized dual numbers and automatic differentiation, supporting arbitrary-order derivatives, complex numbers, and vectorized operations. Many difficult functions are implemented.
 
+## Goal
+
+The goal of this project is to create a simple Python library capable of performing multi-variable, high-order automatic differentiation using generalized dual numbers, while supporting real and complex numbers, vectorized operations, and rich function support.
+
 ## Installation
 
 This package is not yet available on PyPI.
@@ -299,8 +303,19 @@ This project was inspired and guided by the following resources:
 
 If you found additional valuable resources, please consider contributing!
 
+## Contributing & Ideas
+
+Contributions, bug reports, and feature suggestions are very welcome!  
+
+- Feel free to submit a pull request or open an issue on GitHub.  
+- You can also share ideas, questions, or suggestions via email: **lavsluka@gmail.com**.
+  
+By contributing, you help improve the library and expand its capabilities for the community.
+
 ---
 
 ## License
 
 MIT © 2025 Luka Lavš
+
+
